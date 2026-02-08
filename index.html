@@ -2,13 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Mission Control - Life OS</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         :root {
@@ -23,6 +26,9 @@
             overflow: hidden;
             background: #0a0f1a;
             color: white;
+            position: fixed;
+            width: 100%;
+            height: 100%;
         }
 
         /* Animated Background */
@@ -174,7 +180,11 @@
             gap: 32px;
             padding: 40px;
             max-width: 1200px;
+            width: 100%;
             animation: fadeIn 0.5s ease;
+            place-items: center;
+            overflow-y: auto;
+            max-height: calc(100vh - 120px);
         }
 
         .app-library.active {
@@ -277,9 +287,18 @@
         }
 
         .app-icon {
-            font-size: 56px;
             z-index: 1;
             filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+        }
+        
+        .app-icon svg {
+            width: 100%;
+            height: 100%;
         }
 
         .app-name {
@@ -631,25 +650,303 @@
         }
 
         /* Responsive */
-        @media (max-width: 1024px) {
+        
+        /* Tablets (iPad) - Landscape */
+        @media (max-width: 1366px) and (min-width: 1025px) {
             .app-library {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(4, 1fr);
                 gap: 24px;
+                padding: 30px;
+            }
+            
+            .app-card {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .progress-ring {
+                width: 140px;
+                height: 140px;
+            }
+            
+            .app-icon {
+                width: 48px;
+                height: 48px;
             }
         }
-
-        @media (max-width: 768px) {
+        
+        /* Tablets (iPad) - Portrait */
+        @media (max-width: 1024px) and (min-width: 768px) {
+            .app-library {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+                padding: 24px;
+            }
+            
+            .app-card {
+                width: 160px;
+                height: 160px;
+            }
+            
+            .progress-ring {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .progress-ring circle {
+                stroke-width: 2.5;
+            }
+            
+            .app-icon {
+                width: 42px;
+                height: 42px;
+            }
+            
+            .app-name {
+                font-size: 10px;
+            }
+            
             .command-bar {
-                width: 90%;
+                width: 80%;
+                max-width: 500px;
+            }
+            
+            .clock {
+                font-size: 56px;
+            }
+            
+            .greeting-pill {
+                top: 30px;
+                padding: 10px 24px;
+                font-size: 12px;
             }
             
             .activation-content {
-                width: 90%;
-                padding: 40px;
+                width: 85%;
+                max-width: 500px;
+                padding: 50px 40px;
+            }
+            
+            .bottom-nav {
+                bottom: 30px;
+                gap: 16px;
+                padding: 10px 24px;
+            }
+            
+            .nav-item {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+            
+            .sync-button {
+                bottom: 30px;
+                right: 30px;
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+            }
+        }
+
+        /* Mobile - Landscape */
+        @media (max-width: 767px) and (orientation: landscape) {
+            .app-library {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
+                padding: 20px;
+            }
+            
+            .app-card {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .progress-ring {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .progress-ring circle {
+                stroke-width: 2;
+            }
+            
+            .app-icon {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .app-name {
+                font-size: 9px;
+            }
+            
+            .greeting-pill {
+                top: 20px;
+                padding: 8px 16px;
+                font-size: 11px;
+            }
+            
+            .command-bar {
+                width: 70%;
+                padding: 12px 20px;
+            }
+            
+            .command-input {
+                font-size: 14px;
+            }
+            
+            .clock {
+                font-size: 36px;
+                bottom: 40px;
+            }
+            
+            .date {
+                bottom: 25px;
+                font-size: 10px;
+            }
+            
+            .bottom-nav {
+                bottom: 20px;
+                gap: 12px;
+                padding: 8px 16px;
+            }
+            
+            .nav-item {
+                padding: 6px 10px;
+                font-size: 10px;
+            }
+            
+            .sync-button {
+                bottom: 20px;
+                right: 20px;
+                width: 44px;
+                height: 44px;
+                font-size: 18px;
+            }
+        }
+
+        /* Mobile - Portrait */
+        @media (max-width: 767px) and (orientation: portrait) {
+            .app-library {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                padding: 24px;
+            }
+            
+            .app-card {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .progress-ring {
+                width: 130px;
+                height: 130px;
+            }
+            
+            .progress-ring circle {
+                stroke-width: 2.5;
+            }
+            
+            .app-icon {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .app-name {
+                font-size: 10px;
+            }
+            
+            .greeting-pill {
+                top: 60px;
+                padding: 10px 20px;
+                font-size: 11px;
+            }
+            
+            .command-bar {
+                width: 85%;
+                padding: 14px 20px;
+            }
+            
+            .command-input {
+                font-size: 15px;
             }
             
             .clock {
                 font-size: 48px;
+                bottom: 100px;
+            }
+            
+            .date {
+                bottom: 80px;
+                font-size: 10px;
+            }
+            
+            .activation-content {
+                width: 90%;
+                padding: 40px 24px;
+            }
+            
+            .activation-title {
+                font-size: 24px;
+            }
+            
+            .activation-subtitle {
+                font-size: 13px;
+            }
+            
+            .bottom-nav {
+                bottom: 30px;
+                gap: 8px;
+                padding: 8px 12px;
+            }
+            
+            .nav-item {
+                padding: 6px 8px;
+                font-size: 9px;
+            }
+            
+            .nav-item span:first-child {
+                font-size: 14px;
+            }
+            
+            .sync-button {
+                bottom: 30px;
+                right: 20px;
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+            }
+        }
+        
+        /* Small Mobile */
+        @media (max-width: 480px) {
+            .app-card {
+                width: 140px;
+                height: 140px;
+            }
+            
+            .progress-ring {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .app-icon {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .command-bar {
+                width: 90%;
+            }
+            
+            .clock {
+                font-size: 40px;
+            }
+            
+            .activation-content {
+                padding: 32px 20px;
+            }
+            
+            .activation-title {
+                font-size: 22px;
             }
         }
     </style>
@@ -760,14 +1057,14 @@
     <script>
         // App Configuration
         const APPS = [
-            { id: 1, name: 'Nature', icon: '🍃', color: 'teal', defaultProgress: 0 },
-            { id: 2, name: 'The Lab', icon: '🧠', color: 'teal', defaultProgress: 0 },
-            { id: 3, name: 'The Podium', icon: '🍎', color: 'teal', defaultProgress: 0 },
-            { id: 4, name: 'The Hub', icon: '🤝', color: 'teal', defaultProgress: 0 },
-            { id: 5, name: 'Life', icon: '🪷', color: 'teal', defaultProgress: 0 },
-            { id: 6, name: 'Vault', icon: '💎', color: 'teal', defaultProgress: 0 },
-            { id: 7, name: 'Pulse', icon: '🏋️‍♀️', color: 'pink', defaultProgress: 0 },
-            { id: 8, name: 'Dev', icon: '⬡', color: 'teal', defaultProgress: 0 }
+            { id: 1, name: 'Nature', color: 'teal', defaultProgress: 0 },
+            { id: 2, name: 'The Lab', color: 'teal', defaultProgress: 0 },
+            { id: 3, name: 'The Podium', color: 'teal', defaultProgress: 0 },
+            { id: 4, name: 'The Hub', color: 'teal', defaultProgress: 0 },
+            { id: 5, name: 'Life', color: 'teal', defaultProgress: 0 },
+            { id: 6, name: 'Vault', color: 'teal', defaultProgress: 0 },
+            { id: 7, name: 'Pulse', color: 'pink', defaultProgress: 0 },
+            { id: 8, name: 'Dev', color: 'teal', defaultProgress: 0 }
         ];
 
         // State Management
@@ -808,6 +1105,75 @@
             localStorage.setItem('missionControlApps', JSON.stringify(appsData));
         }
 
+        // Get holographic SVG icon for each app
+        function getAppIcon(appId, color) {
+            const iconColor = color === 'pink' ? '#ec4899' : '#14b8a6';
+            const icons = {
+                1: `<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M28 8C28 8 20 12 20 20C20 24 22 28 28 32C34 28 36 24 36 20C36 12 28 8 28 8Z" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M28 32C28 32 22 36 18 42C16 45 16 48 20 48C24 48 28 44 28 44" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M28 32C28 32 34 36 38 42C40 45 40 48 36 48C32 48 28 44 28 44" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>`,
+                2: `<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M38 20C38 14.48 33.52 10 28 10C22.48 10 18 14.48 18 20C18 25.52 22.48 30 28 30C33.52 30 38 25.52 38 20Z" stroke="${iconColor}" stroke-width="2"/>
+                    <path d="M24 22C24 22 24 24 26 24C28 24 28 22 28 22" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M28 22C28 22 28 24 30 24C32 24 32 22 32 22" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M14 34L18 30M42 34L38 30M28 30V46M22 46H34" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="22" cy="18" r="1.5" fill="${iconColor}"/>
+                    <circle cx="34" cy="18" r="1.5" fill="${iconColor}"/>
+                </svg>`,
+                3: `<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="28" cy="30" r="12" stroke="${iconColor}" stroke-width="2"/>
+                    <path d="M28 18C28 18 26 14 26 12C26 10 28 10 28 10C28 10 30 10 30 12C30 14 28 18 28 18Z" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M32 20L34 16C35 14 36 14 36 14" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="24" cy="28" r="1.5" fill="${iconColor}"/>
+                    <path d="M28 32C28 32 26 34 24 34" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+                </svg>`,
+                4: `<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 24L14 28L18 32L22 28L18 24Z" stroke="${iconColor}" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M38 24L34 28L38 32L42 28L38 24Z" stroke="${iconColor}" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M22 28H34" stroke="${iconColor}" stroke-width="2"/>
+                    <path d="M18 24V20C18 18 19 17 20 17H24" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M38 24V20C38 18 37 17 36 17H32" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M18 32V36C18 38 19 39 20 39H24" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M38 32V36C38 38 37 39 36 39H32" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+                </svg>`,
+                5: `<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M28 12L32 20L28 24L24 20L28 12Z" stroke="${iconColor}" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M20 24L16 28L20 36L24 32L20 24Z" stroke="${iconColor}" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M36 24L32 28L36 36L40 32L36 24Z" stroke="${iconColor}" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M24 36L20 40L28 44L36 40L32 36" stroke="${iconColor}" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M24 20L20 24M32 20L36 24M24 32L20 36M32 32L36 36" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+                </svg>`,
+                6: `<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M28 10L38 20L38 36L28 46L18 36L18 20L28 10Z" stroke="${iconColor}" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M28 10V22M28 34V46M18 20L28 28M28 28L38 20M18 36L28 28M28 28L38 36" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+                </svg>`,
+                7: `<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="18" cy="20" r="4" stroke="${iconColor}" stroke-width="2"/>
+                    <circle cx="38" cy="20" r="4" stroke="${iconColor}" stroke-width="2"/>
+                    <circle cx="18" cy="36" r="4" stroke="${iconColor}" stroke-width="2"/>
+                    <circle cx="38" cy="36" r="4" stroke="${iconColor}" stroke-width="2"/>
+                    <path d="M18 24V32M38 24V32M22 20H34M22 36H34" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+                </svg>`,
+                8: `<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M28 12L40 21V35L28 44L16 35V21L28 12Z" stroke="${iconColor}" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M28 12V28M16 21L28 28M28 28L40 21M16 35L28 28M28 28L40 35M28 28V44" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+                </svg>`
+            };
+            return icons[appId] || '';
+        }
+        
+        // Get progress ring radius based on viewport
+        function getProgressRadius() {
+            const width = window.innerWidth;
+            if (width <= 480) return 57;
+            if (width <= 767) return 62;
+            if (width <= 1024) return 57;
+            if (width <= 1366) return 67;
+            return 77;
+        }
+
         // Render Apps
         function renderApps() {
             const library = document.getElementById('appLibrary');
@@ -822,24 +1188,28 @@
                 card.setAttribute('data-app-id', app.id);
 
                 const progress = appData?.progress || 0;
-                const circumference = 2 * Math.PI * 77;
+                
+                // Dynamic radius based on viewport
+                const radius = getProgressRadius();
+                const circumference = 2 * Math.PI * radius;
                 const offset = circumference - (progress / 100) * circumference;
+                const ringSize = radius + 3;
 
                 card.innerHTML = `
                     <div class="app-card-inner">
                         <div class="app-card-front">
-                            <svg class="progress-ring ${app.color}">
-                                <circle class="bg" cx="80" cy="80" r="77"></circle>
+                            <svg class="progress-ring ${app.color}" viewBox="0 0 ${ringSize * 2} ${ringSize * 2}">
+                                <circle class="bg" cx="${ringSize}" cy="${ringSize}" r="${radius}"></circle>
                                 <circle 
                                     class="progress" 
-                                    cx="80" 
-                                    cy="80" 
-                                    r="77"
+                                    cx="${ringSize}" 
+                                    cy="${ringSize}" 
+                                    r="${radius}"
                                     stroke-dasharray="${circumference}"
                                     stroke-dashoffset="${offset}"
                                 ></circle>
                             </svg>
-                            <div class="app-icon">${app.icon}</div>
+                            <div class="app-icon">${getAppIcon(app.id, app.color)}</div>
                             <div class="app-name">${app.name}</div>
                         </div>
                         <div class="app-card-back">
