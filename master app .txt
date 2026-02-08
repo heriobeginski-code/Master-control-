@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Control - Life OS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --teal: #14b8a6;
+            --pink: #ec4899;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            overflow: hidden;
+            background: #0a0f1a;
+            color: white;
+        }
+
+        /* Animated Background */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: linear-gradient(135deg, #0a192f 0%, #0f2027 50%, #203a43 100%);
+            animation: gradientShift 20s ease infinite;
+        }
+
+        .background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.03" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            opacity: 0.5;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(20deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-30px); }
+        }
+
+        /* Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Greeting Pill */
+        .greeting-pill {
+            position: absolute;
+            top: 40px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            padding: 12px 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeInDown 0.8s ease forwards;
+            animation-delay: 0.3s;
+        }
+
+        .greeting-icon {
+            width: 8px;
+            height: 8px;
+            background: var(--teal);
+            border-radius: 50%;
+            animation: pulse 2s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+
+        /* Command Bar */
+        .command-bar {
+            width: 600px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards;
+            animation-delay: 0.5s;
+            transition: all 0.3s ease;
+        }
+
+        .command-icon {
+            color: var(--teal);
+            font-size: 20px;
+        }
+
+        .command-input {
+            flex: 1;
+            background: none;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        .command-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Clock */
+        .clock {
+            position: absolute;
+            bottom: 60px;
+            font-size: 72px;
+            font-weight: 200;
+            letter-spacing: 2px;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+            animation-delay: 0.7s;
+        }
+
+        .date {
+            position: absolute;
+            bottom: 40px;
+            font-size: 12px;
+            font-weight: 400;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        /* App Library Grid */
+        .app-library {
+            display: none;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+            padding: 40px;
+            max-width: 1200px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .app-library.active {
+            display: grid;
+        }
+
+        .app-card {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .app-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .app-card.flipped .app-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .app-card-front,
+        .app-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 32px;
+        }
+
+        .app-card-front {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .app-card-front:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .app-card.inactive .app-card-front {
+            opacity: 0.5;
+        }
+
+        .app-card-back {
+            background: rgba(20, 184, 166, 0.15);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--teal);
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 24px;
+        }
+
+        .progress-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 160px;
+            height: 160px;
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 3;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .progress-ring .bg {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-ring .progress {
+            stroke: var(--teal);
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: center;
+        }
+
+        .progress-ring.pink .progress {
+            stroke: var(--pink);
+        }
+
+        .app-icon {
+            font-size: 56px;
+            z-index: 1;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        .app-name {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            z-index: 1;
+        }
+
+        .edit-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .edit-button {
+            background: var(--teal);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .edit-button:hover {
+            background: #0d9488;
+        }
+
+        .reset-button {
+            background: rgba(239, 68, 68, 0.8);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reset-button:hover {
+            background: rgba(220, 38, 38, 0.9);
+        }
+
+        /* Activation View */
+        .activation-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            background: rgba(10, 15, 26, 0.95);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .activation-view.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .activation-content {
+            width: 600px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 60px;
+            text-align: center;
+        }
+
+        .activation-title {
+            font-size: 32px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .activation-title .highlight {
+            color: var(--teal);
+            font-weight: 600;
+        }
+
+        .activation-subtitle {
+            font-size: 14px;
+            opacity: 0.6;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .activation-input {
+            width: 100%;
+            background: rgba(20, 184, 166, 0.1);
+            border: 1px solid var(--teal);
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .activation-input:focus {
+            background: rgba(20, 184, 166, 0.15);
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+        }
+
+        .activation-button {
+            width: 100%;
+            background: var(--teal);
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .activation-button:hover {
+            background: #0d9488;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(20, 184, 166, 0.3);
+        }
+
+        .activation-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .activation-stat {
+            text-align: center;
+        }
+
+        .activation-stat-label {
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.5;
+            margin-bottom: 4px;
+        }
+
+        .activation-stat-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--teal);
+        }
+
+        .close-activation {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 20px;
+        }
+
+        .close-activation:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* App Iframe View */
+        .app-iframe-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 200;
+            background: #000;
+        }
+
+        .app-iframe-view.active {
+            display: block;
+        }
+
+        .iframe-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 201;
+        }
+
+        .done-button {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 8px 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .done-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .app-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: absolute;
+            bottom: 40px;
+            display: none;
+            gap: 24px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            padding: 12px 32px;
+        }
+
+        .bottom-nav.active {
+            display: flex;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 1;
+        }
+
+        .nav-item.active {
+            color: var(--teal);
+        }
+
+        /* Sync Button */
+        .sync-button {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 24px;
+        }
+
+        .sync-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: rotate(180deg);
+        }
+
+        .sync-button.active {
+            display: flex;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .app-library {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .command-bar {
+                width: 90%;
+            }
+            
+            .activation-content {
+                width: 90%;
+                padding: 40px;
+            }
+            
+            .clock {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    
+    <div class="container">
+        <!-- Zen State -->
+        <div class="greeting-pill">
+            <div class="greeting-icon"></div>
+            <span id="greetingText">Greetings, User</span>
+        </div>
+
+        <div class="command-bar">
+            <div class="command-icon">🔍</div>
+            <input 
+                type="text" 
+                class="command-input" 
+                id="commandInput"
+                placeholder="Search or type a command..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="clock" id="clock">10:42</div>
+        <div class="date" id="date">MONDAY, OCTOBER 28</div>
+
+        <!-- App Library -->
+        <div class="app-library" id="appLibrary">
+            <!-- Apps will be generated by JavaScript -->
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav" id="bottomNav">
+            <div class="nav-item" data-view="zen">
+                <span>🏠</span>
+                <span>Home</span>
+            </div>
+            <div class="nav-item active" data-view="library">
+                <span>📱</span>
+                <span>Library</span>
+            </div>
+            <div class="nav-item" data-view="stats">
+                <span>📊</span>
+                <span>Stats</span>
+            </div>
+            <div class="nav-item" data-view="config">
+                <span>⚙️</span>
+                <span>Config</span>
+            </div>
+        </div>
+
+        <!-- Sync Button -->
+        <div class="sync-button" id="syncButton" title="Sync to GitHub">
+            🔄
+        </div>
+    </div>
+
+    <!-- Activation View -->
+    <div class="activation-view" id="activationView">
+        <div class="close-activation" id="closeActivation">←</div>
+        <div class="activation-content">
+            <h1 class="activation-title">
+                ACTIVATE <span class="highlight" id="activationAppName">SHELL</span>
+            </h1>
+            <p class="activation-subtitle">
+                Paste your GitHub Web App URL to initialize this<br>workstation.
+            </p>
+            <input 
+                type="url" 
+                class="activation-input" 
+                id="activationInput"
+                placeholder="https://github.com/username/project-repo..."
+            >
+            <button class="activation-button" id="activateButton">
+                <span>⚡</span>
+                <span>ACTIVATE</span>
+            </button>
+            <div class="activation-stats">
+                <div class="activation-stat">
+                    <div class="activation-stat-label">Systems</div>
+                    <div class="activation-stat-value" id="systemsOnline">0/8 Online</div>
+                </div>
+                <div class="activation-stat">
+                    <div class="activation-stat-label">Execution</div>
+                    <div class="activation-stat-value">95.3% RTL</div>
+                </div>
+                <div class="activation-stat">
+                    <div class="activation-stat-label">Delimiter</div>
+                    <div class="activation-stat-value">1080px²</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Iframe View -->
+    <div class="app-iframe-view" id="appIframeView">
+        <div class="iframe-header">
+            <button class="done-button" id="doneButton">
+                <span>←</span>
+                <span>Done</span>
+            </button>
+        </div>
+        <iframe class="app-iframe" id="appIframe" src=""></iframe>
+    </div>
+
+    <script>
+        // App Configuration
+        const APPS = [
+            { id: 1, name: 'Nature', icon: '🍃', color: 'teal', defaultProgress: 0 },
+            { id: 2, name: 'The Lab', icon: '🧠', color: 'teal', defaultProgress: 0 },
+            { id: 3, name: 'The Podium', icon: '🍎', color: 'teal', defaultProgress: 0 },
+            { id: 4, name: 'The Hub', icon: '🤝', color: 'teal', defaultProgress: 0 },
+            { id: 5, name: 'Life', icon: '🪷', color: 'teal', defaultProgress: 0 },
+            { id: 6, name: 'Vault', icon: '💎', color: 'teal', defaultProgress: 0 },
+            { id: 7, name: 'Pulse', icon: '🏋️‍♀️', color: 'pink', defaultProgress: 0 },
+            { id: 8, name: 'Dev', icon: '⬡', color: 'teal', defaultProgress: 0 }
+        ];
+
+        // State Management
+        let currentView = 'zen';
+        let currentActivatingApp = null;
+        let appsData = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAppsData();
+            renderApps();
+            updateClock();
+            setInterval(updateClock, 1000);
+            setupEventListeners();
+            updateSystemsOnline();
+        });
+
+        // Load Apps Data from localStorage
+        function loadAppsData() {
+            const stored = localStorage.getItem('missionControlApps');
+            if (stored) {
+                appsData = JSON.parse(stored);
+            } else {
+                // Initialize with empty data
+                APPS.forEach(app => {
+                    appsData[app.id] = {
+                        url: null,
+                        progress: app.defaultProgress,
+                        active: false
+                    };
+                });
+                saveAppsData();
+            }
+        }
+
+        // Save Apps Data to localStorage
+        function saveAppsData() {
+            localStorage.setItem('missionControlApps', JSON.stringify(appsData));
+        }
+
+        // Render Apps
+        function renderApps() {
+            const library = document.getElementById('appLibrary');
+            library.innerHTML = '';
+
+            APPS.forEach(app => {
+                const appData = appsData[app.id];
+                const isActive = appData && appData.active;
+                
+                const card = document.createElement('div');
+                card.className = `app-card ${!isActive ? 'inactive' : ''}`;
+                card.setAttribute('data-app-id', app.id);
+
+                const progress = appData?.progress || 0;
+                const circumference = 2 * Math.PI * 77;
+                const offset = circumference - (progress / 100) * circumference;
+
+                card.innerHTML = `
+                    <div class="app-card-inner">
+                        <div class="app-card-front">
+                            <svg class="progress-ring ${app.color}">
+                                <circle class="bg" cx="80" cy="80" r="77"></circle>
+                                <circle 
+                                    class="progress" 
+                                    cx="80" 
+                                    cy="80" 
+                                    r="77"
+                                    stroke-dasharray="${circumference}"
+                                    stroke-dashoffset="${offset}"
+                                ></circle>
+                            </svg>
+                            <div class="app-icon">${app.icon}</div>
+                            <div class="app-name">${app.name}</div>
+                        </div>
+                        <div class="app-card-back">
+                            <h3 style="font-size: 16px; margin-bottom: 16px;">${app.name}</h3>
+                            <input 
+                                type="url" 
+                                class="edit-input" 
+                                placeholder="GitHub URL..."
+                                value="${appData?.url || ''}"
+                            >
+                            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                                <button class="edit-button" onclick="saveAppUrl(${app.id})">Save</button>
+                                <button class="reset-button" onclick="resetApp(${app.id})">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Single click - open app or activate
+                card.addEventListener('click', (e) => {
+                    if (!card.classList.contains('flipped')) {
+                        if (isActive) {
+                            openApp(app.id);
+                        } else {
+                            showActivationView(app.id);
+                        }
+                    }
+                });
+
+                // Double click - flip card
+                card.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    card.classList.toggle('flipped');
+                });
+
+                library.appendChild(card);
+            });
+        }
+
+        // Show Activation View
+        function showActivationView(appId) {
+            const app = APPS.find(a => a.id === appId);
+            currentActivatingApp = appId;
+            
+            document.getElementById('activationAppName').textContent = app.name.toUpperCase();
+            document.getElementById('activationInput').value = '';
+            document.getElementById('activationView').classList.add('active');
+        }
+
+        // Activate App
+        document.getElementById('activateButton')?.addEventListener('click', () => {
+            const url = document.getElementById('activationInput').value.trim();
+            
+            if (!url) {
+                alert('Please enter a valid URL');
+                return;
+            }
+
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                alert('URL must start with http:// or https://');
+                return;
+            }
+
+            appsData[currentActivatingApp] = {
+                url: url,
+                progress: 0,
+                active: true
+            };
+
+            saveAppsData();
+            document.getElementById('activationView').classList.remove('active');
+            renderApps();
+            updateSystemsOnline();
+        });
+
+        // Close Activation View
+        document.getElementById('closeActivation')?.addEventListener('click', () => {
+            document.getElementById('activationView').classList.remove('active');
+        });
+
+        // Open App in Iframe
+        function openApp(appId) {
+            const appData = appsData[appId];
+            if (!appData || !appData.url) return;
+
+            document.getElementById('appIframe').src = appData.url;
+            document.getElementById('appIframeView').classList.add('active');
+        }
+
+        // Close App Iframe
+        document.getElementById('doneButton')?.addEventListener('click', () => {
+            document.getElementById('appIframeView').classList.remove('active');
+            document.getElementById('appIframe').src = '';
+        });
+
+        // Save App URL from Edit View
+        function saveAppUrl(appId) {
+            const card = document.querySelector(`[data-app-id="${appId}"]`);
+            const input = card.querySelector('.edit-input');
+            const url = input.value.trim();
+
+            if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+                alert('URL must start with http:// or https://');
+                return;
+            }
+
+            appsData[appId].url = url;
+            appsData[appId].active = !!url;
+            saveAppsData();
+            
+            card.classList.toggle('flipped');
+            renderApps();
+            updateSystemsOnline();
+        }
+
+        // Reset App
+        function resetApp(appId) {
+            if (!confirm('Are you sure you want to reset this app?')) return;
+
+            appsData[appId] = {
+                url: null,
+                progress: 0,
+                active: false
+            };
+
+            saveAppsData();
+            
+            const card = document.querySelector(`[data-app-id="${appId}"]`);
+            card.classList.toggle('flipped');
+            renderApps();
+            updateSystemsOnline();
+        }
+
+        // Update Systems Online Counter
+        function updateSystemsOnline() {
+            const activeCount = Object.values(appsData).filter(app => app.active).length;
+            document.getElementById('systemsOnline').textContent = `${activeCount}/8 Online`;
+        }
+
+        // Command Input Handler
+        const commandInput = document.getElementById('commandInput');
+        commandInput?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handleCommand(e.target.value.trim().toLowerCase());
+                e.target.value = '';
+            }
+        });
+
+        // Handle Commands
+        function handleCommand(command) {
+            if (command === 'apps') {
+                switchToLibrary();
+            } else if (command === 'clear') {
+                switchToZen();
+            } else {
+                // Check if command matches an app name
+                const app = APPS.find(a => a.name.toLowerCase() === command);
+                if (app) {
+                    switchToLibrary();
+                    setTimeout(() => {
+                        const appData = appsData[app.id];
+                        if (appData && appData.active) {
+                            openApp(app.id);
+                        } else {
+                            showActivationView(app.id);
+                        }
+                    }, 300);
+                }
+            }
+        }
+
+        // Switch Views
+        function switchToLibrary() {
+            currentView = 'library';
+            document.querySelector('.greeting-pill').style.display = 'none';
+            document.querySelector('.command-bar').style.display = 'none';
+            document.querySelector('.clock').style.display = 'none';
+            document.querySelector('.date').style.display = 'none';
+            document.getElementById('appLibrary').classList.add('active');
+            document.getElementById('bottomNav').classList.add('active');
+            document.getElementById('syncButton').classList.add('active');
+        }
+
+        function switchToZen() {
+            currentView = 'zen';
+            document.querySelector('.greeting-pill').style.display = 'flex';
+            document.querySelector('.command-bar').style.display = 'flex';
+            document.querySelector('.clock').style.display = 'block';
+            document.querySelector('.date').style.display = 'block';
+            document.getElementById('appLibrary').classList.remove('active');
+            document.getElementById('bottomNav').classList.remove('active');
+            document.getElementById('syncButton').classList.remove('active');
+        }
+
+        // Navigation Items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const view = item.getAttribute('data-view');
+                
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                if (view === 'zen') {
+                    switchToZen();
+                } else if (view === 'library') {
+                    switchToLibrary();
+                }
+            });
+        });
+
+        // Sync to GitHub
+        document.getElementById('syncButton')?.addEventListener('click', () => {
+            const config = {
+                timestamp: new Date().toISOString(),
+                apps: appsData
+            };
+
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mission-control-config.json';
+            a.click();
+            URL.revokeObjectURL(url);
+
+            alert('Configuration downloaded! Commit this to your GitHub repository.');
+        });
+
+        // Update Clock
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}`;
+
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const dayName = days[now.getDay()];
+            const monthName = months[now.getMonth()];
+            const date = now.getDate();
+            
+            document.getElementById('date').textContent = `${dayName.toUpperCase()}, ${monthName.toUpperCase()} ${date}`;
+
+            // Update greeting based on time
+            const hour = now.getHours();
+            let greeting = 'Greetings';
+            if (hour < 12) greeting = 'Good Morning';
+            else if (hour < 18) greeting = 'Good Afternoon';
+            else greeting = 'Good Evening';
+            
+            document.getElementById('greetingText').textContent = `${greeting}, User`;
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Escape key to close views
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if (document.getElementById('appIframeView').classList.contains('active')) {
+                        document.getElementById('doneButton').click();
+                    } else if (document.getElementById('activationView').classList.contains('active')) {
+                        document.getElementById('closeActivation').click();
+                    }
+                }
+            });
+        }
+
+        // Make functions global for inline handlers
+        window.saveAppUrl = saveAppUrl;
+        window.resetApp = resetApp;
+    </script>
+</body>
+</html>
